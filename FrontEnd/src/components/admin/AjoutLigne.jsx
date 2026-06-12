@@ -2,14 +2,11 @@ import React, { useState, useEffect } from "react";
 import { TrashFill, PlusLg, CheckCircleFill, ExclamationTriangleFill } from "react-bootstrap-icons";
 import { useNavigate } from "react-router-dom";
 
-/**
- * Composant AjoutLigne
- * Gère tout le cycle de vie du formulaire des lignes : saisie, validation, envoi et messages de retour.
- */
 export default function AjoutLigne({ token, isEditMode, editId, editData }) {
   const navigate = useNavigate();
 
   // --- ÉTATS DU FORMULAIRE ---
+  // Champs de base de la ligne
   const [numero, setNumero] = useState("");
   const [depart, setDepart] = useState("");
   const [arrivee, setArrivee] = useState("");
@@ -20,6 +17,10 @@ export default function AjoutLigne({ token, isEditMode, editId, editData }) {
 
   // État local pour gérer l'affichage du succès/erreur/chargement
   const [status, setStatus] = useState("idle"); // idle | loading | success | error
+  // idle = formulaire prêt à être rempli
+  // loading = en cours d'envoi
+  // success = succès de l'opération
+  // error = erreur lors de l'opération
 
   // --- PRÉ-REMPLISSAGE ---
   useEffect(() => {
@@ -29,25 +30,26 @@ export default function AjoutLigne({ token, isEditMode, editId, editData }) {
       setArrivee(editData.arrivee || "");
       setPrix(editData.prix || 5.00);
       setDescription(editData.description || "");
-      if (editData.itineraires) {
-        const aller = editData.itineraires.filter(i => i.direction === "aller").map(i => i.nom_arret);
+      if (editData.itineraires) { // on vérifie que les itinéraires existent avant de tenter de les utiliser pour éviter les erreurs
+        const aller = editData.itineraires.filter(i => i.direction === "aller").map(i => i.nom_arret); // on extrait les arrêts aller et retour à partir des itinéraires de la ligne
         const retour = editData.itineraires.filter(i => i.direction === "retour").map(i => i.nom_arret);
         setArretsAller(aller.length > 0 ? aller : [""]);
+        // si aucun arrêt n'est trouvé pour une direction, on initialise avec un champ vide pour permettre à l'utilisateur de saisir le premier arrêt
         setArretsRetour(retour.length > 0 ? retour : [""]);
       }
     }
   }, [isEditMode, editData]);
 
   // --- GESTION DES ARRÊTS ---
-  const handleAddStop = (dir) => {
-    if (dir === "aller") setArretsAller([...arretsAller, ""]);
-    else setArretsRetour([...arretsRetour, ""]);
+  const handleAddStop = (dir) => { // ajoute un champ d'arrêt supplémentaire pour la direction spécifiée
+    if (dir === "aller") setArretsAller([...arretsAller, ""]); // on ajoute un champ vide à la fin du tableau des arrêts aller
+    else setArretsRetour([...arretsRetour, ""]); // on ajoute un champ vide à la fin du tableau des arrêts retour
   };
-  const handleRemoveStop = (dir, index) => {
-    if (dir === "aller") setArretsAller(arretsAller.filter((_, i) => i !== index));
-    else setArretsRetour(arretsRetour.filter((_, i) => i !== index));
+  const handleRemoveStop = (dir, index) => { // supprime le champ d'arrêt à l'index spécifié pour la direction donnée
+    if (dir === "aller") setArretsAller(arretsAller.filter((_, i) => i !== index)); // on filtre le tableau des arrêts aller pour supprimer l'arrêt à l'index spécifié
+    else setArretsRetour(arretsRetour.filter((_, i) => i !== index));// on filtre le tableau des arrêts retour pour supprimer l'arrêt à l'index spécifié
   };
-  const handleUpdateStop = (dir, index, val) => {
+  const handleUpdateStop = (dir, index, val) => { // met à jour la valeur du champ d'arrêt à l'index spécifié pour la direction donnée
     const arr = dir === "aller" ? [...arretsAller] : [...arretsRetour];
     arr[index] = val;
     dir === "aller" ? setArretsAller(arr) : setArretsRetour(arr);
@@ -67,7 +69,7 @@ export default function AjoutLigne({ token, isEditMode, editId, editData }) {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`,
         },
-        body: JSON.stringify({
+        body: JSON.stringify({ // on envoie les données de la ligne au format JSON, en s'assurant de filtrer les arrêts vides pour ne pas envoyer des arrêts sans nom
           numero, depart, arrivee, prix, description,
           arrets_aller: arretsAller.filter(Boolean),
           arrets_retour: arretsRetour.filter(Boolean),

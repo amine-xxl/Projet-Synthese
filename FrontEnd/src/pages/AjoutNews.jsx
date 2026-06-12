@@ -33,16 +33,16 @@ function useScrollReveal(threshold = 0.1) {
 export default function AjoutNews() {
   const { user, token } = useAuth();
   const navigate = useNavigate();
-  const { state } = useLocation();
+  const { state } = useLocation(); // pour récupérer les données passées via la navigation (onglet actif, mode édition, etc.)
 
   const [heroRef, heroVisible] = useScrollReveal();
   const [formRef, formVisible] = useScrollReveal();
 
   // Extraction des données de navigation
-  const activeTab = state?.activeTab || "lignes";
-  const isEditMode = state?.editMode || false;
-  const editId = state?.editId || null;
-  const editData = state?.editData || null;
+  const activeTab = state?.activeTab || "lignes"; // par défaut, on considère que l'onglet actif est "lignes" si aucune information n'est passée via la navigation
+  const isEditMode = state?.editMode || false; // on considère que c'est un mode édition si le flag editMode est présent et vrai dans le state de la navigation
+  const editId = state?.editId || null; // l'ID de l'élément à éditer, s'il s'agit d'une modification
+  const editData = state?.editData || null; // les données de l'élément à éditer, passées pour pré-remplir le formulaire en mode édition
 
   // Sécurité admin
   useEffect(() => {
@@ -62,7 +62,7 @@ export default function AjoutNews() {
    * Chemin de retour dynamique
    */
   const handleBack = () => {
-    navigate(activeTab === "chauffeurs" ? "/Affectation" : "/Admin");
+    navigate(activeTab === "chauffeurs" ? "/Affectation" : "/Admin"); 
   };
 
   return (

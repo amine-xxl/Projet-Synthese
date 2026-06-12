@@ -2,14 +2,6 @@ import React, { useState, useEffect } from "react";
 import { PencilFill, TrashFill } from "react-bootstrap-icons";
 import { useNavigate } from "react-router-dom";
 
-/**
- * Composant LigneTable
- * Affiche la liste des lignes de bus dans un tableau.
- * Gère lui-même la récupération des données et la suppression d'une ligne.
- * 
- * @param {Object} props
- * @param {string} props.token - Token d'authentification pour les actions sensibles.
- */
 export default function LigneTable({ token }) {
   const [lignes, setLignes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +25,7 @@ export default function LigneTable({ token }) {
       setLoading(false);
     }
   };
-
+// useEffect pour charger les lignes au chargement du composant
   useEffect(() => {
     fetchLignes();
   }, []);

@@ -29,7 +29,7 @@ function useScrollReveal(threshold = 0.15) {
       ([entry]) => { if (entry.isIntersecting) setVisible(true); }, // callback qui s'exécute à chaque changement de visibilité de l'élément observé
       { threshold }
     );
-    if (ref.current) observer.observe(ref.current); // on commence à observer l'élément référencé
+    if (ref.current) observer.observe(ref.current); // on commence à observer l'élément référencé car il est monté dans le DOM
     return () => observer.disconnect(); // nettoyage : on arrête d'observer lorsque le composant est démonté
   }, [threshold]);
   return [ref, visible]; // retourne la référence à attacher à l'élément et un booléen indiquant si l'élément est visible ou non

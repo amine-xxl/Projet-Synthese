@@ -53,7 +53,7 @@ export default function AchatTicket() {
       },
       { threshold: 0.1 }
     );
-
+    // On observe les éléments du Hero et du contenu principal pour déclencher les animations d'apparition
     if (heroRef.current) observer.observe(heroRef.current);
     if (contentRef.current) observer.observe(contentRef.current);
 
@@ -69,7 +69,7 @@ export default function AchatTicket() {
         }
       });
       if (!res.ok) throw new Error("Erreur lors de la récupération des lignes.");
-      const data = await res.json();
+      const data = await res.json(); // on s'assure que les données reçues sont bien un tableau avant de les stocker dans le state
       setLignes(data);
     } catch (err) {
       setError(err.message);
@@ -90,9 +90,9 @@ export default function AchatTicket() {
 
     setBuying(true);
     setBuyError(null);
-    setSuccessMsg(null);
+    setSuccessMsg(null);// on réinitialise les messages de succès et d'erreur à chaque tentative d'achat pour éviter les confusions
 
-    try {
+    try { // Simulation d'achat : envoi d'une requête POST à l'API pour créer un billet
       const res = await fetch("http://127.0.0.1:8000/api/billets", {
         method: "POST",
         headers: {
@@ -108,7 +108,7 @@ export default function AchatTicket() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || "L'achat a échoué. Veuillez réessayer.");
+        throw new Error("L'achat a échoué. Veuillez réessayer.");
       }
 
       setSuccessMsg("Votre billet a bien été acheté !");

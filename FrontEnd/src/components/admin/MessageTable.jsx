@@ -1,95 +1,121 @@
 import React, { useState, useEffect } from "react";
 import { TrashFill } from "react-bootstrap-icons";
 
-/**
- * Composant MessageTable
- * Affiche la liste des messages reçus via le formulaire de contact.
- * Gère lui-même la récupération des données et la suppression d'un message.
- * 
- * @param {Object} props
- * @param {string} props.token - Token d'authentification (nécessaire car les messages sont privés).
- */
 export default function MessageTable({ token }) {
-  const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // --- ÉTATS ---
+  const [messages, setMessages] = useState([]); // Liste des messages
+  const [loading, setLoading] = useState(true);   // État de chargement
 
+  // URL spécifique aux messages administratifs
   const API_URL = "http://127.0.0.1:8000/api/admin";
 
   // --- CHARGEMENT DES DONNÉES ---
+
+  /**
+   * Récupère la liste des messages de contact depuis l'API sécurisée.
+   */
   const fetchMessages = async () => {
     setLoading(true);
     try {
       const res = await fetch(`${API_URL}/messages`, {
         headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`
+          "Accept": "application/json",
+          "Authorization": `Bearer ${token}` // Authentification obligatoire
         }
       });
       const data = await res.json();
       setMessages(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error("Erreur chargement messages:", err);
+      console.error("Erreur lors de la récupération des messages :", err);
     } finally {
       setLoading(false);
     }
   };
 
+  // Recharger si le token change ou au chargement initial
   useEffect(() => {
-    fetchMessages();
+    if (token) fetchMessages();
   }, [token]);
 
-  // --- ACTIONS ---
+  // --- ACTIONS (SUPPRESSION UNIQUEMENT) ---
 
+  /**
+   * Supprime un message définitivement.
+   * @param {number|string} id - L'ID du message à supprimer.
+   */
   const handleDelete = async (id) => {
-    if (!window.confirm("Voulez-vous vraiment supprimer ce message ?")) return;
+    if (!window.confirm("Voulez-vous vraiment supprimer ce message ? Cette action est irréversible.")) return;
 
     try {
       const res = await fetch(`${API_URL}/messages/${id}`, {
         method: "DELETE",
         headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`
+          "Accept": "application/json",
+          "Authorization": `Bearer ${token}`
         }
       });
+
       if (res.ok) {
+        // Mise à jour de la liste locale
         fetchMessages();
       } else {
-        alert("Erreur lors de la suppression.");
+        alert("Une erreur s'est produite lors de la suppression.");
       }
     } catch (err) {
-      console.error("Erreur suppression message:", err);
+      console.error("Erreur réseau (suppression message) :", err);
     }
   };
 
-  if (loading) return <div className="text-center py-4"><div className="contact-spinner" /></div>;
+  // --- RENDU ---
+
+  if (loading) {
+    return (
+      <div className="text-center py-5">
+        <div className="contact-spinner" />
+        <p className="mt-2 text-muted small">Récupération des messages entrants...</p>
+      </div>
+    );
+  }
 
   return (
     <table className="admin-custom-table">
       <thead>
         <tr>
-          <th>Nom</th>
+          <th>Expéditeur</th>
           <th>Email</th>
           <th>Sujet</th>
-          <th>Message</th>
-          <th>Actions</th>
+          <th>Contenu du message</th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody>
         {messages.length === 0 ? (
+          // Message si la boîte de réception est vide
           <tr>
-            <td colSpan="5" className="admin-table-empty">Aucun message reçu.</td>
+            <td colSpan="5" className="admin-table-empty">Aucun message reçu pour le moment.</td>
           </tr>
         ) : (
           messages.map((item) => (
             <tr key={item.id}>
-              <td>{item.nom}</td>
+              {/* Nom de l'expéditeur */}
+              <td className="fw-bold">{item.nom}</td>
+              
+              {/* Email de l'expéditeur (petite taille) */}
               <td className="small">{item.email}</td>
-              <td className="fw-bold">{item.sujet}</td>
-              <td className="small text-muted">{item.message}</td>
+              
+              {/* Sujet du message */}
+              <td className="text-primary">{item.sujet}</td>
+              
+              {/* Contenu textuel avec style discret */}
+              <td className="small text-muted text-wrap" style={{ maxWidth: "300px" }}>
+                {item.message}
+              </td>
+
+              {/* Bouton de suppression */}
               <td>
                 <button
                   className="admin-action-btn admin-action-btn--delete"
-                  title="Supprimer"
+                  title="Supprimer ce message"
                   onClick={() => handleDelete(item.id)}
                 >
                   <TrashFill size={13} />
