@@ -12,7 +12,7 @@ class ContactMessageMail extends Mailable
 
     public function __construct(Message $messageContact)
     {
-        // On stocke le message recu depuis le controleur.
+        // On stocke le message recu depuis le controleur dans $this->messageContact.
         // Le nom messageContact evite la confusion avec le champ "message" de la table.
         $this->messageContact = $messageContact;
     }
