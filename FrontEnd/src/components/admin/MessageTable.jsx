@@ -1,12 +1,68 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { TrashFill } from "react-bootstrap-icons";
 
-const truncateText = (text, length = 60) => {
-  if (!text) return "";
-  return text.length > length ? text.substring(0, length) + "..." : text;
-};
+/**
+ * Composant MessageTable
+ * Affiche la liste des messages reçus via le formulaire de contact.
+ * Gère lui-même la récupération des données et la suppression d'un message.
+ * 
+ * @param {Object} props
+ * @param {string} props.token - Token d'authentification (nécessaire car les messages sont privés).
+ */
+export default function MessageTable({ token }) {
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-export default function MessageTable({ data, onDelete }) {
+  const API_URL = "http://127.0.0.1:8000/api/admin";
+
+  // --- CHARGEMENT DES DONNÉES ---
+  const fetchMessages = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/messages`, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      setMessages(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Erreur chargement messages:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMessages();
+  }, [token]);
+
+  // --- ACTIONS ---
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Voulez-vous vraiment supprimer ce message ?")) return;
+
+    try {
+      const res = await fetch(`${API_URL}/messages/${id}`, {
+        method: "DELETE",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        fetchMessages();
+      } else {
+        alert("Erreur lors de la suppression.");
+      }
+    } catch (err) {
+      console.error("Erreur suppression message:", err);
+    }
+  };
+
+  if (loading) return <div className="text-center py-4"><div className="contact-spinner" /></div>;
+
   return (
     <table className="admin-custom-table">
       <thead>
@@ -19,23 +75,22 @@ export default function MessageTable({ data, onDelete }) {
         </tr>
       </thead>
       <tbody>
-        {data.length === 0 ? (
+        {messages.length === 0 ? (
           <tr>
-            <td colSpan="5" className="admin-table-empty">
-              Aucun message
-            </td>
+            <td colSpan="5" className="admin-table-empty">Aucun message reçu.</td>
           </tr>
         ) : (
-          data.map((item) => (
+          messages.map((item) => (
             <tr key={item.id}>
-              <td>{item.name}</td>
-              <td>{item.email}</td>
-              <td>{item.subject}</td>
-              <td>{truncateText(item.message)}</td>
+              <td>{item.nom}</td>
+              <td className="small">{item.email}</td>
+              <td className="fw-bold">{item.sujet}</td>
+              <td className="small text-muted">{item.message}</td>
               <td>
                 <button
                   className="admin-action-btn admin-action-btn--delete"
-                  onClick={() => onDelete(item.id)}
+                  title="Supprimer"
+                  onClick={() => handleDelete(item.id)}
                 >
                   <TrashFill size={13} />
                 </button>

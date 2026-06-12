@@ -11,6 +11,7 @@ root.render(
   <BrowserRouter>
     {/* AuthProvider rend user+token accessible partout dans l'application */}
     <AuthProvider>
+      {/* <App /> = children */}
       <App />
     </AuthProvider>
   </BrowserRouter>
