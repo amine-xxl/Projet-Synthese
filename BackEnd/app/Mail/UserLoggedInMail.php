@@ -13,7 +13,7 @@ class UserLoggedInMail extends Mailable
 
     public function __construct(User $user)
     {
-        // On stocke l'utilisateur recu depuis le controleur.
+        // On stocke l'utilisateur recu depuis le controleur  dans la propriété $user.
         $this->user = $user;
     }
 

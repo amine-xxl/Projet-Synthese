@@ -35,25 +35,11 @@ return new class extends Migration
     {
         Schema::create('itineraires', function (Blueprint $table) {
 
-            // ── Clé primaire auto-incrémentée ──
             $table->id();
-
-            // ── Clé étrangère vers la table "lignes" ──
-            // Si on supprime une ligne, tous ses arrêts sont supprimés aussi (cascade)
-            $table->foreignId('ligne_id')
-                  ->constrained('lignes')
-                  ->onDelete('cascade');
-
-            // ── Direction : "aller" ou "retour" ──
+            $table->foreignId('ligne_id')->constrained('lignes')->onDelete('cascade');
             $table->enum('direction', ['aller', 'retour']);
-
-            // ── Le nom de l'arrêt (station) ──
             $table->string('nom_arret');
-
-            // ── L'ordre de l'arrêt dans le trajet (1 = premier, 2 = deuxième, etc.) ──
             $table->integer('ordre');
-
-            // ── Dates de création et mise à jour automatiques ──
             $table->timestamps();
         });
     }
